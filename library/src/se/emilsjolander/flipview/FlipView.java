@@ -30,8 +30,6 @@ import android.widget.FrameLayout;
 import android.widget.ListAdapter;
 import android.widget.Scroller;
 
-import java.awt.Color;
-
 public class FlipView extends FrameLayout {
 
 	public interface OnFlipListener {
