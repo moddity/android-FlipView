@@ -30,10 +30,13 @@ import android.widget.FrameLayout;
 import android.widget.ListAdapter;
 import android.widget.Scroller;
 
+import java.awt.Color;
+
 public class FlipView extends FrameLayout {
 
 	public interface OnFlipListener {
 		public void onFlippedToPage(FlipView v, int position, long id);
+        public void onBeginFlipPage(FlipView v, int position, long id);
 	}
 
 	public interface OnOverFlipListener {
@@ -479,7 +482,7 @@ public class FlipView extends FrameLayout {
 
 			if ((mIsFlippingVertically && yDiff > mTouchSlop && yDiff > xDiff)
 					|| (!mIsFlippingVertically && xDiff > mTouchSlop && xDiff > yDiff)) {
-				mIsFlipping = true;
+                startFlipping();
 				mLastX = x;
 				mLastY = y;
 			} else if ((mIsFlippingVertically && xDiff > mTouchSlop)
@@ -543,7 +546,7 @@ public class FlipView extends FrameLayout {
 
 			// start flipping immediately if interrupting some sort of animation
 			if (endScroll() || endPeak()) {
-				mIsFlipping = true;
+                startFlipping();
 			}
 
 			// Remember where the motion event started
@@ -565,7 +568,7 @@ public class FlipView extends FrameLayout {
 				final float yDiff = Math.abs(y - mLastY);
 				if ((mIsFlippingVertically && yDiff > mTouchSlop && yDiff > xDiff)
 						|| (!mIsFlippingVertically && xDiff > mTouchSlop && xDiff > yDiff)) {
-					mIsFlipping = true;
+                    startFlipping();
 					mLastX = x;
 					mLastY = y;
 				}
@@ -670,6 +673,11 @@ public class FlipView extends FrameLayout {
 		}
 		return true;
 	}
+
+    private void startFlipping() {
+        mIsFlipping = true;
+        postBeginToFlipPage(mCurrentPageIndex);
+    }
 
 	@Override
 	protected void dispatchDraw(Canvas canvas) {
@@ -912,6 +920,19 @@ public class FlipView extends FrameLayout {
 			}
 		});
 	}
+
+    private void postBeginToFlipPage(final int page) {
+        post(new Runnable() {
+
+            @Override
+            public void run() {
+                if (mOnFlipListener != null) {
+                    mOnFlipListener.onBeginFlipPage(FlipView.this, page,
+                            mAdapter.getItemId(page));
+                }
+            }
+        });
+    }
 
 	private void onSecondaryPointerUp(MotionEvent ev) {
 		final int pointerIndex = MotionEventCompat.getActionIndex(ev);
