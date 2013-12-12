@@ -35,6 +35,7 @@ public class FlipView extends FrameLayout {
 	public interface OnFlipListener {
 		public void onFlippedToPage(FlipView v, int position, long id);
         public void onBeginFlipPage(FlipView v, int position, long id);
+        public void onEndFlip(FlipView v, int position, long id);
 	}
 
 	public interface OnOverFlipListener {
@@ -932,6 +933,19 @@ public class FlipView extends FrameLayout {
         });
     }
 
+    private void postEndFlip(final int page) {
+        post(new Runnable() {
+
+            @Override
+            public void run() {
+                if (mOnFlipListener != null) {
+                    mOnFlipListener.onEndFlip(FlipView.this, page,
+                            mAdapter.getItemId(page));
+                }
+            }
+        });
+    }
+
 	private void onSecondaryPointerUp(MotionEvent ev) {
 		final int pointerIndex = MotionEventCompat.getActionIndex(ev);
 		final int pointerId = MotionEventCompat.getPointerId(ev, pointerIndex);
@@ -1005,6 +1019,7 @@ public class FlipView extends FrameLayout {
 			mVelocityTracker.recycle();
 			mVelocityTracker = null;
 		}
+        postEndFlip(mCurrentPageIndex);
 		return wasflipping;
 	}
 
